@@ -1,0 +1,52 @@
+import { h } from 'preact';
+import { useMemo } from 'preact/hooks';
+import { useSectionProps } from 'shared/hooks';
+import { capsuleTextUrl, typingTextUrl } from 'shared/utils/text2md';
+import { ITextSetting } from '../default';
+import { ETextProvider, ETextStyle } from '../text.enum';
+import { alignImageStyle } from 'shared/utils';
+
+const Preview = ({ id }: { id: string }) => {
+  const props = useSectionProps<ITextSetting>(id);
+
+  if (!props) return null;
+  const { text, value, provider, align } = props;
+
+  const styleTag = useMemo(() => {
+    if (text.style === ETextStyle.ITALIC) return 'i';
+    if (text.style === ETextStyle.STRIKE) return 'strike';
+    return text.tag;
+  }, [text.style, text.tag]);
+
+  const isLargeHeading = useMemo(() => {
+    return ['h1', 'h2'].indexOf(text.tag) > -1;
+  }, [text.tag]);
+
+  return (
+    <>
+      {provider === ETextProvider.TEXT && (
+        <>
+          {h(
+            text.tag,
+            {
+              style: {
+                textAlign: align,
+                fontStyle: text.style,
+              },
+            },
+            h(styleTag, null, value)
+          )}
+          {isLargeHeading && <div class="mt-2 h-px bg-white/10" />}
+        </>
+      )}
+      {provider === ETextProvider.TYPING && (
+        <img src={typingTextUrl(props)} style={alignImageStyle(align)} />
+      )}
+      {provider === ETextProvider.CAPSULE && (
+        <img src={capsuleTextUrl(props)} style={alignImageStyle(align)} />
+      )}
+    </>
+  );
+};
+
+export default Preview;
